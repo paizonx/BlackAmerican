@@ -146,8 +146,8 @@
             }
 
             const filename = videoId.includes('.') ? videoId : videoId + '.mp4';
-            const primaryUrl = 'https://cdn.videy.co/' + encodeURIComponent(filename) + '#t=0.001';
-            const fallbackUrl = 'https://cdn2.videy.co/' + encodeURIComponent(filename) + '#t=0.001';
+            const primaryUrl = 'https://cdn2.videy.co/' + encodeURIComponent(filename) + '#t=0.001';
+            const fallbackUrl = 'https://cdn.videy.co/' + encodeURIComponent(filename) + '#t=0.001';
 
             mainPlayer.src = primaryUrl;
             mainPlayer.load();
