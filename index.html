@@ -163,7 +163,7 @@
                 Trending Video
             </button>
             <button id="tabPopular" class="px-6 py-2.5 rounded-full text-sm font-bold transition-all bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
-                Popular Video
+                Popullar Video
             </button>
         </div>
     </header>
@@ -306,6 +306,17 @@
                 const endIndex = startIndex + itemsPerPage;
                 const videosToRender = activeVideos.slice(startIndex, endIndex);
 
+                // Setup Intersection Observer untuk Lazy Loading (Mempercepat Loading)
+                const observer = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const video = entry.target;
+                            video.src = video.dataset.src; // Mulai muat video HANYA saat terlihat di layar
+                            observer.unobserve(video);
+                        }
+                    });
+                }, { rootMargin: '100px' }); // Memuat 100px sebelum video masuk layar
+
                 videosToRender.forEach(videoId => {
                     const filename = videoId.includes('.') ? videoId : videoId + '.mp4';
                     const videoUrl = 'https://cdn.videy.co/' + encodeURIComponent(filename);
@@ -313,22 +324,30 @@
                     const card = document.createElement('a');
                     // Mengarahkan ke halaman pemutar (pastikan nama file pemutar Anda adalah play.html di hosting)
                     card.href = `play.html?v=${videoId}`;
-                    card.className = "vid-card group";
+                    card.className = "vid-card group bg-gray-800/40"; // Tambahan background gelap
                     
-                    // Desain kartu bersih, tanpa judul teks, murni visual
+                    // Desain kartu dengan Skeleton Loader dan Image Placeholder
                     card.innerHTML = `
-                        <div class="thumb-box h-full">
+                        <div class="thumb-box h-full w-full relative">
+                            
+                            <!-- Efek Loading Berkedip (Skeleton) -->
+                            <div class="absolute inset-0 flex items-center justify-center bg-gray-200 dark:bg-gray-900 animate-pulse skeleton-bg z-0">
+                                <i data-lucide="image" class="w-8 h-8 text-gray-400 dark:text-gray-700"></i>
+                            </div>
+
+                            <!-- Video disembunyikan (opacity-0) sampai frame berhasil dimuat -->
                             <video 
-                                src="${videoUrl}#t=0.001" 
+                                data-src="${videoUrl}#t=0.001" 
+                                class="w-full h-full object-cover opacity-0 transition-opacity duration-700 absolute inset-0 z-10"
                                 muted 
                                 playsinline 
                                 preload="metadata"
                                 loop>
                             </video>
                             
-                            <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-all duration-300"></div>
+                            <div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-all duration-300 z-20"></div>
                             
-                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-110">
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-110 z-30">
                                 <div class="w-14 h-14 bg-red-600/90 backdrop-blur-[2px] rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(220,38,38,0.5)]">
                                     <i data-lucide="play" class="w-6 h-6 text-white fill-white ml-1"></i>
                                 </div>
@@ -338,8 +357,19 @@
                     
                     galleryGrid.appendChild(card);
 
-                    // Auto-play on hover
                     const vidElement = card.querySelector('video');
+                    const skeletonElement = card.querySelector('.skeleton-bg');
+
+                    // Pantau kapan video ini masuk ke layar (Lazy Load)
+                    observer.observe(vidElement);
+
+                    // Transisi Halus: Tampilkan video dan hapus efek loading saat frame siap
+                    vidElement.addEventListener('loadeddata', () => {
+                        vidElement.classList.remove('opacity-0');
+                        setTimeout(() => skeletonElement.remove(), 500);
+                    });
+
+                    // Auto-play on hover
                     card.addEventListener('mouseenter', () => {
                         vidElement.play().catch(e => {}); 
                     });
