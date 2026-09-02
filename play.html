@@ -165,8 +165,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const filename = videoId.includes('.') ? videoId : videoId + '.mp4';
     // Prioritaskan cdn utama Videy yang lebih stabil, cdn2 sebagai cadangan
-    const primaryUrl = 'https://cdn.videy.co/' + encodeURIComponent(filename);
-    const fallbackUrl = 'https://cdn2.videy.co/' + encodeURIComponent(filename);
+    const primaryUrl = 'https://cdn2.videy.co/' + encodeURIComponent(filename);
+    const fallbackUrl = 'https://cdn.videy.co/' + encodeURIComponent(filename);
 
     // Load URL CDN Pertama kali
     mainPlayer.src = primaryUrl;
