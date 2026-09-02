@@ -159,11 +159,11 @@
         
         <!-- Category Tabs -->
         <div class="flex flex-wrap justify-center gap-3 mt-8">
-            <button id="tabBlack" class="px-6 py-2.5 rounded-full text-sm font-bold transition-all bg-red-600 text-white shadow-lg shadow-red-500/30">
-                Black American
+            <button id="tabTrending" class="px-6 py-2.5 rounded-full text-sm font-bold transition-all bg-red-600 text-white shadow-lg shadow-red-500/30">
+                Trending Video
             </button>
-            <button id="tabWhite" class="px-6 py-2.5 rounded-full text-sm font-bold transition-all bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
-                White American
+            <button id="tabPopular" class="px-6 py-2.5 rounded-full text-sm font-bold transition-all bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+                Popular Video
             </button>
         </div>
     </header>
@@ -204,9 +204,9 @@
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
 
-            // Variabel Data
-            let videoData = { black: [], white: [] };
-            let currentCategory = 'black'; // Kategori default saat halaman dimuat
+            // Variabel Data - Menggunakan kategori trending dan popular
+            let videoData = { trending: [], popular: [] };
+            let currentCategory = 'trending'; // Kategori default saat halaman dimuat
             const itemsPerPage = 10;
             let currentPage = 1;
             let totalPages = 1;
@@ -221,8 +221,8 @@
             const totalPagesNum = document.getElementById('totalPagesNum');
             const showingCount = document.getElementById('showingCount');
             
-            const tabBlack = document.getElementById('tabBlack');
-            const tabWhite = document.getElementById('tabWhite');
+            const tabTrending = document.getElementById('tabTrending');
+            const tabPopular = document.getElementById('tabPopular');
             
             const themeToggleBtn = document.getElementById('themeToggleBtn');
             const themeIcon = document.getElementById('themeIcon');
@@ -248,40 +248,37 @@
                 const activeStyle = "px-6 py-2.5 rounded-full text-sm font-bold transition-all bg-red-600 text-white shadow-lg shadow-red-500/30";
                 const inactiveStyle = "px-6 py-2.5 rounded-full text-sm font-bold transition-all bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700";
                 
-                if(category === 'black') {
-                    tabBlack.className = activeStyle;
-                    tabWhite.className = inactiveStyle;
+                if(category === 'trending') {
+                    tabTrending.className = activeStyle;
+                    tabPopular.className = inactiveStyle;
                 } else {
-                    tabWhite.className = activeStyle;
-                    tabBlack.className = inactiveStyle;
+                    tabPopular.className = activeStyle;
+                    tabTrending.className = inactiveStyle;
                 }
                 
                 renderGallery(currentPage);
             }
 
-            tabBlack.addEventListener('click', () => switchTab('black'));
-            tabWhite.addEventListener('click', () => switchTab('white'));
+            tabTrending.addEventListener('click', () => switchTab('trending'));
+            tabPopular.addEventListener('click', () => switchTab('popular'));
 
-            // AMBIL DATA JSON (Dengan Fallback untuk Preview Layar)
+            // AMBIL DATA JSON
             fetch('./videos.json')
                 .then(response => {
                     if (!response.ok) throw new Error("Gagal mengambil file json");
                     return response.json();
                 })
                 .catch(error => {
-                    console.warn("Gagal mengambil videos.json di environment ini, menggunakan data cadangan untuk preview.", error);
-                    // Fallback data agar tetap bisa di-preview di layar editor ini
+                    console.warn("Menggunakan data cadangan untuk preview.", error);
+                    // Fallback data yang juga disesuaikan kategori barunya
                     return {
-                        "black": [
-                            "GmlkrHEC1", "MIksjhlJ1", "7nAmkj0B1", "VhBAEVqT1", "VV9dtX8C1",
-                            "te0Mjl9z1", "ghDHMCx31", "udXI1XU51", "hM2jBjld1", "MhLtffVH1",
-                            "WvZD6Gjs1", "JqRAbi2U1", "5cneNfvA1", "1Cu6MVWn1", "G7NMB5r11", "A5pC4nzI1"
+                        "trending": [
+                            "0wIkoHTq1", "6PiSqvNF1", "y0aeoQDg1", "ApmsyPvV1", "sEhtGWw91",
+                            "zUUaR5ad1", "gQJz7lMY1", "IffWXwZQ1", "mbYoWKXG1", "1s1qyOtV1"
                         ],
-                        "white": [
-                            "LdvKe6vk1", "yldrGnmJ1", "HB8GSZNa1", "ceRECvgR1", "BMb1nETB1",
-                            "YzdmI8Vb1", "FD6CbiOM1", "5JGnefbY1", "r7KVsXhv1", "ax0aes9W1",
-                            "pmeX3hfp1", "VPCp8le51", "PVtzKLud1", "QrzViTeA1", "5mQyYs4r1",
-                            "b5zCbsSQ1", "ym8DUc3g1", "bh8Gb35j1"
+                        "popular": [
+                            "0wIkoHTq1", "6PiSqvNF1", "y0aeoQDg1", "ApmsyPvV1", "sEhtGWw91",
+                            "zUUaR5ad1", "gQJz7lMY1", "IffWXwZQ1", "mbYoWKXG1", "1s1qyOtV1"
                         ]
                     };
                 })
@@ -293,7 +290,7 @@
                     galleryGrid.classList.remove('hidden');
                     paginationArea.classList.remove('hidden');
                     
-                    // Render kategori default (black)
+                    // Render kategori default (trending)
                     renderGallery(currentPage);
                 });
 
@@ -314,7 +311,7 @@
                     const videoUrl = 'https://cdn.videy.co/' + encodeURIComponent(filename);
                     
                     const card = document.createElement('a');
-                    // Mengarahkan ke halaman pemutar lokal (play.html) di domain yang sama
+                    // Mengarahkan ke halaman pemutar (pastikan nama file pemutar Anda adalah play.html di hosting)
                     card.href = `play.html?v=${videoId}`;
                     card.className = "vid-card group";
                     
