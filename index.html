@@ -9,6 +9,11 @@
     <!-- Bypass Hotlink Protection Videy -->
     <meta name="referrer" content="no-referrer">
     
+    <!-- Trik Super Cepat: Pre-connect DNS ke Server Videy -->
+    <link rel="preconnect" href="https://cdn.videy.co" crossorigin>
+    <link rel="preconnect" href="https://cdn2.videy.co" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.videy.co">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     
@@ -64,7 +69,7 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        /* Premium Video Card (Tanpa Judul) */
+        /* Premium Video Card */
         .vid-card {
             background: #111;
             border-radius: 16px;
@@ -74,9 +79,10 @@
             display: block;
             aspect-ratio: 9/16;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transform: translateZ(0); /* Akselerasi Hardware GPU */
         }
         .vid-card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-4px) translateZ(0);
             box-shadow: 0 15px 30px -10px rgba(220, 38, 38, 0.25);
             border: 1px solid rgba(220, 38, 38, 0.4);
         }
@@ -128,13 +134,11 @@
             </div>
 
             <div class="flex items-center gap-4">
-                <!-- Join Community Button (Telegram) -->
                 <a href="https://t.me/yourgroup" target="_blank" class="hidden sm:flex items-center gap-2 px-4 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 rounded-lg text-sm font-bold transition-all">
                     <i data-lucide="send" class="w-4 h-4"></i>
                     Join Community
                 </a>
 
-                <!-- Theme Toggle Button -->
                 <button id="themeToggleBtn" class="p-2.5 bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-xl text-gray-700 dark:text-gray-300 transition-colors">
                     <i id="themeIcon" data-lucide="sun" class="w-5 h-5"></i>
                 </button>
@@ -144,7 +148,6 @@
     </nav>
 
     <header class="max-w-7xl mx-auto px-4 md:px-8 mt-10 mb-8 text-center">
-        <!-- Mobile Join Community Button -->
         <div class="sm:hidden mb-6">
              <a href="https://t.me/yourgroup" target="_blank" class="flex items-center justify-center w-full gap-2 px-4 py-3 bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 rounded-xl text-sm font-bold transition-all">
                 <i data-lucide="send" class="w-4 h-4"></i>
@@ -170,17 +173,14 @@
 
     <main class="max-w-7xl mx-auto px-4 md:px-8">
         
-        <!-- Area Loading -->
         <div id="loadingState" class="w-full flex justify-center py-20">
             <i data-lucide="loader-2" class="w-10 h-10 text-red-500 animate-spin"></i>
         </div>
 
-        <!-- Grid Container -->
         <div id="galleryGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-5 hidden">
-            <!-- Videos diproses lewat JavaScript -->
+            <!-- Render video di sini -->
         </div>
 
-        <!-- Pagination Controls -->
         <div id="paginationArea" class="mt-16 flex flex-col items-center justify-center gap-4 hidden">
             <div class="flex items-center gap-2 bg-gray-100 dark:bg-black/40 p-2 rounded-2xl border border-gray-200 dark:border-white/5">
                 <button id="btnPrev" class="page-btn flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold">
@@ -204,14 +204,12 @@
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
 
-            // Variabel Data - Menggunakan kategori trending dan popular
             let videoData = { trending: [], popular: [] };
-            let currentCategory = 'trending'; // Kategori default saat halaman dimuat
+            let currentCategory = 'trending';
             const itemsPerPage = 10;
             let currentPage = 1;
             let totalPages = 1;
 
-            // Elemen DOM
             const galleryGrid = document.getElementById('galleryGrid');
             const loadingState = document.getElementById('loadingState');
             const paginationArea = document.getElementById('paginationArea');
@@ -220,15 +218,12 @@
             const currentPageNum = document.getElementById('currentPageNum');
             const totalPagesNum = document.getElementById('totalPagesNum');
             const showingCount = document.getElementById('showingCount');
-            
             const tabTrending = document.getElementById('tabTrending');
             const tabPopular = document.getElementById('tabPopular');
-            
             const themeToggleBtn = document.getElementById('themeToggleBtn');
             const themeIcon = document.getElementById('themeIcon');
             const htmlElement = document.documentElement;
 
-            // FITUR DARK MODE / LIGHT MODE
             themeToggleBtn.addEventListener('click', () => {
                 htmlElement.classList.toggle('dark');
                 if (htmlElement.classList.contains('dark')) {
@@ -239,12 +234,10 @@
                 lucide.createIcons();
             });
 
-            // FITUR TAB KATEGORI
             function switchTab(category) {
                 currentCategory = category;
-                currentPage = 1; // Reset halaman ke 1 setiap ganti tab
+                currentPage = 1;
                 
-                // Styling Aktif/Inaktif pada tombol
                 const activeStyle = "px-6 py-2.5 rounded-full text-sm font-bold transition-all bg-red-600 text-white shadow-lg shadow-red-500/30";
                 const inactiveStyle = "px-6 py-2.5 rounded-full text-sm font-bold transition-all bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700";
                 
@@ -262,43 +255,30 @@
             tabTrending.addEventListener('click', () => switchTab('trending'));
             tabPopular.addEventListener('click', () => switchTab('popular'));
 
-            // AMBIL DATA JSON
+            // Memuat file JSON
             fetch('./videos.json')
                 .then(response => {
                     if (!response.ok) throw new Error("Gagal mengambil file json");
                     return response.json();
                 })
                 .catch(error => {
-                    console.warn("Menggunakan data cadangan untuk preview.", error);
-                    // Fallback data yang juga disesuaikan kategori barunya
+                    // Fallback jika tidak jalan di Preview
                     return {
-                        "trending": [
-                            "0wIkoHTq1", "6PiSqvNF1", "y0aeoQDg1", "ApmsyPvV1", "sEhtGWw91",
-                            "zUUaR5ad1", "gQJz7lMY1", "IffWXwZQ1", "mbYoWKXG1", "1s1qyOtV1"
-                        ],
-                        "popular": [
-                            "0wIkoHTq1", "6PiSqvNF1", "y0aeoQDg1", "ApmsyPvV1", "sEhtGWw91",
-                            "zUUaR5ad1", "gQJz7lMY1", "IffWXwZQ1", "mbYoWKXG1", "1s1qyOtV1"
-                        ]
+                        "trending": ["IifxGCk71", "AgruqdXM1", "iiuBMlFN1", "b34pSuGu1", "GEouLnku1", "oMO0L9hx1", "5MDr5xag1", "5bHdmjdq1", "03kuzX7r1", "HVaUKEsX1"],
+                        "popular": ["4OOItAN71", "xeoBQplg1", "iUPd2KLH1", "D1fgtkD51", "c96YltwF1", "bCPCAVcN1", "Upr3ptuN1", "3BrQeCMa1", "dLCkQRTl1", "VkpzQwuZ1"]
                     };
                 })
                 .then(data => {
                     videoData = data;
-                    
-                    // Sembunyikan loading, tampilkan grid
                     loadingState.classList.add('hidden');
                     galleryGrid.classList.remove('hidden');
                     paginationArea.classList.remove('hidden');
-                    
-                    // Render kategori default (trending)
                     renderGallery(currentPage);
                 });
 
-
             function renderGallery(page) {
-                galleryGrid.innerHTML = ''; // Bersihkan grid
+                galleryGrid.innerHTML = ''; 
                 
-                // Ambil daftar ID video berdasarkan kategori aktif
                 const activeVideos = videoData[currentCategory] || [];
                 totalPages = Math.ceil(activeVideos.length / itemsPerPage) || 1;
                 
@@ -306,42 +286,42 @@
                 const endIndex = startIndex + itemsPerPage;
                 const videosToRender = activeVideos.slice(startIndex, endIndex);
 
-                // Setup Intersection Observer untuk Lazy Loading (Mempercepat Loading)
+                // Lazy Loading tingkat dewa (memuat sedikit lebih awal dengan margin 300px)
                 const observer = new IntersectionObserver((entries, observer) => {
                     entries.forEach(entry => {
                         if (entry.isIntersecting) {
                             const video = entry.target;
-                            video.src = video.dataset.src; // Mulai muat video HANYA saat terlihat di layar
+                            video.preload = "metadata"; // Paksa load metadata saja (ringan)
+                            video.src = video.dataset.src;
+                            video.load(); // Paksa browser menjalankan frame gambar
                             observer.unobserve(video);
                         }
                     });
-                }, { rootMargin: '100px' }); // Memuat 100px sebelum video masuk layar
+                }, { rootMargin: '300px' }); 
 
                 videosToRender.forEach(videoId => {
                     const filename = videoId.includes('.') ? videoId : videoId + '.mp4';
                     const videoUrl = 'https://cdn.videy.co/' + encodeURIComponent(filename);
                     
                     const card = document.createElement('a');
-                    // Mengarahkan ke halaman pemutar (pastikan nama file pemutar Anda adalah play.html di hosting)
                     card.href = `play.html?v=${videoId}`;
-                    card.className = "vid-card group bg-gray-800/40"; // Tambahan background gelap
+                    card.className = "vid-card group bg-gray-800/40 relative"; 
                     
-                    // Desain kartu dengan Skeleton Loader dan Image Placeholder
                     card.innerHTML = `
-                        <div class="thumb-box h-full w-full relative">
-                            
-                            <!-- Efek Loading Berkedip (Skeleton) -->
-                            <div class="absolute inset-0 flex items-center justify-center bg-gray-200 dark:bg-gray-900 animate-pulse skeleton-bg z-0">
-                                <i data-lucide="image" class="w-8 h-8 text-gray-400 dark:text-gray-700"></i>
+                        <div class="thumb-box h-full w-full relative bg-gray-200 dark:bg-gray-900">
+                            <!-- Loading Animasi -->
+                            <div class="absolute inset-0 flex flex-col items-center justify-center animate-pulse skeleton-bg z-0">
+                                <i data-lucide="video" class="w-8 h-8 text-gray-400 dark:text-gray-700 mb-2"></i>
                             </div>
 
-                            <!-- Video disembunyikan (opacity-0) sampai frame berhasil dimuat -->
+                            <!-- Video di set preload="none" agar TIDAK ngeload sebelum di scroll -->
                             <video 
                                 data-src="${videoUrl}#t=0.001" 
                                 class="w-full h-full object-cover opacity-0 transition-opacity duration-700 absolute inset-0 z-10"
                                 muted 
                                 playsinline 
-                                preload="metadata"
+                                preload="none" 
+                                disablePictureInPicture
                                 loop>
                             </video>
                             
@@ -360,33 +340,29 @@
                     const vidElement = card.querySelector('video');
                     const skeletonElement = card.querySelector('.skeleton-bg');
 
-                    // Pantau kapan video ini masuk ke layar (Lazy Load)
                     observer.observe(vidElement);
 
-                    // Transisi Halus: Tampilkan video dan hapus efek loading saat frame siap
+                    // Hapus efek loading instan saat frame pertama tertangkap
                     vidElement.addEventListener('loadeddata', () => {
                         vidElement.classList.remove('opacity-0');
-                        setTimeout(() => skeletonElement.remove(), 500);
+                        skeletonElement.style.display = 'none';
                     });
 
-                    // Auto-play on hover
+                    // Mainkan video hanya saat hover, agar tidak buang kuota
                     card.addEventListener('mouseenter', () => {
-                        vidElement.play().catch(e => {}); 
+                        vidElement.play().catch(e => { /* Abaikan error autoplay */ }); 
                     });
                     card.addEventListener('mouseleave', () => {
                         vidElement.pause();
-                        vidElement.currentTime = 0.001;
                     });
                 });
 
-                // Perbarui Indikator Halaman
                 currentPageNum.textContent = page;
                 totalPagesNum.textContent = totalPages;
                 
                 const currentShowing = videosToRender.length;
                 showingCount.textContent = `${startIndex + 1} - ${startIndex + currentShowing} of ${activeVideos.length}`;
 
-                // Status Tombol
                 btnPrev.disabled = page === 1;
                 btnNext.disabled = page === totalPages || totalPages === 0;
 
