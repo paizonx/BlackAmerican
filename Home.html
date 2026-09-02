@@ -1,1 +1,387 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trending Content | Premium Gallery</title>
+    
+    <meta name="description" content="Discover trending community videos and exclusive content.">
+    <!-- Bypass Hotlink Protection Videy -->
+    <meta name="referrer" content="no-referrer">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class', 
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#050505',
+                        lightbg: '#f8fafc',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
 
+        /* Mode Terang / Gelap */
+        body { background-color: #f8fafc; color: #0f172a; }
+        .dark body {
+            background-color: #050505;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(220, 38, 38, 0.05), transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.03), transparent 50%);
+            color: #ffffff;
+        }
+
+        /* Glassmorphism Header */
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            transition: all 0.3s ease;
+        }
+        .dark .glass-nav {
+            background: rgba(5, 5, 5, 0.85);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Premium Video Card (Tanpa Judul) */
+        .vid-card {
+            background: #111;
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            display: block;
+            aspect-ratio: 9/16;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .vid-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px -10px rgba(220, 38, 38, 0.25);
+            border: 1px solid rgba(220, 38, 38, 0.4);
+        }
+        
+        .thumb-box video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .vid-card:hover .thumb-box video {
+            transform: scale(1.05);
+        }
+
+        /* Pagination Buttons */
+        .page-btn {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            color: #334155;
+            transition: all 0.2s;
+        }
+        .dark .page-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        .page-btn:hover:not(:disabled) {
+            background: #dc2626;
+            border-color: #dc2626;
+            color: white;
+            transform: translateY(-2px);
+        }
+        .page-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="pb-16">
+
+    <nav class="glass-nav py-4 px-4 md:px-8">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            
+            <div class="flex items-center gap-3 cursor-pointer">
+                <div class="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-600/30">
+                    <i data-lucide="play" class="w-5 h-5 text-white fill-white"></i>
+                </div>
+                <h1 class="text-xl font-extrabold tracking-tight text-gray-900 dark:text-white">Portal<span class="text-red-500">Media</span></h1>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <!-- Join Community Button (Telegram) -->
+                <a href="https://t.me/yourgroup" target="_blank" class="hidden sm:flex items-center gap-2 px-4 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 rounded-lg text-sm font-bold transition-all">
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                    Join Community
+                </a>
+
+                <!-- Theme Toggle Button -->
+                <button id="themeToggleBtn" class="p-2.5 bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-xl text-gray-700 dark:text-gray-300 transition-colors">
+                    <i id="themeIcon" data-lucide="sun" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+        </div>
+    </nav>
+
+    <header class="max-w-7xl mx-auto px-4 md:px-8 mt-10 mb-8 text-center">
+        <!-- Mobile Join Community Button -->
+        <div class="sm:hidden mb-6">
+             <a href="https://t.me/yourgroup" target="_blank" class="flex items-center justify-center w-full gap-2 px-4 py-3 bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 rounded-xl text-sm font-bold transition-all">
+                <i data-lucide="send" class="w-4 h-4"></i>
+                Join Telegram Community
+            </a>
+        </div>
+
+        <h2 class="text-3xl md:text-4xl font-extrabold mb-4 leading-tight text-gray-900 dark:text-white">
+            Discover Premium <br/>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-rose-400 dark:from-red-500 dark:to-rose-400">Community Content</span>
+        </h2>
+        
+        <!-- Category Tabs -->
+        <div class="flex flex-wrap justify-center gap-3 mt-8">
+            <button id="tabBlack" class="px-6 py-2.5 rounded-full text-sm font-bold transition-all bg-red-600 text-white shadow-lg shadow-red-500/30">
+                Black American
+            </button>
+            <button id="tabWhite" class="px-6 py-2.5 rounded-full text-sm font-bold transition-all bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+                White American
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 md:px-8">
+        
+        <!-- Area Loading -->
+        <div id="loadingState" class="w-full flex justify-center py-20">
+            <i data-lucide="loader-2" class="w-10 h-10 text-red-500 animate-spin"></i>
+        </div>
+
+        <!-- Grid Container -->
+        <div id="galleryGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-5 hidden">
+            <!-- Videos diproses lewat JavaScript -->
+        </div>
+
+        <!-- Pagination Controls -->
+        <div id="paginationArea" class="mt-16 flex flex-col items-center justify-center gap-4 hidden">
+            <div class="flex items-center gap-2 bg-gray-100 dark:bg-black/40 p-2 rounded-2xl border border-gray-200 dark:border-white/5">
+                <button id="btnPrev" class="page-btn flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i> Prev
+                </button>
+                
+                <div class="px-6 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Page <span id="currentPageNum" class="text-gray-900 dark:text-white font-bold mx-1">1</span> of <span id="totalPagesNum">1</span>
+                </div>
+                
+                <button id="btnNext" class="page-btn flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold">
+                    Next <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-600">Showing <span id="showingCount">0</span> videos</p>
+        </div>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+
+            // Variabel Data
+            let videoData = { black: [], white: [] };
+            let currentCategory = 'black'; // Kategori default saat halaman dimuat
+            const itemsPerPage = 10;
+            let currentPage = 1;
+            let totalPages = 1;
+
+            // Elemen DOM
+            const galleryGrid = document.getElementById('galleryGrid');
+            const loadingState = document.getElementById('loadingState');
+            const paginationArea = document.getElementById('paginationArea');
+            const btnPrev = document.getElementById('btnPrev');
+            const btnNext = document.getElementById('btnNext');
+            const currentPageNum = document.getElementById('currentPageNum');
+            const totalPagesNum = document.getElementById('totalPagesNum');
+            const showingCount = document.getElementById('showingCount');
+            
+            const tabBlack = document.getElementById('tabBlack');
+            const tabWhite = document.getElementById('tabWhite');
+            
+            const themeToggleBtn = document.getElementById('themeToggleBtn');
+            const themeIcon = document.getElementById('themeIcon');
+            const htmlElement = document.documentElement;
+
+            // FITUR DARK MODE / LIGHT MODE
+            themeToggleBtn.addEventListener('click', () => {
+                htmlElement.classList.toggle('dark');
+                if (htmlElement.classList.contains('dark')) {
+                    themeIcon.setAttribute('data-lucide', 'sun');
+                } else {
+                    themeIcon.setAttribute('data-lucide', 'moon');
+                }
+                lucide.createIcons();
+            });
+
+            // FITUR TAB KATEGORI
+            function switchTab(category) {
+                currentCategory = category;
+                currentPage = 1; // Reset halaman ke 1 setiap ganti tab
+                
+                // Styling Aktif/Inaktif pada tombol
+                const activeStyle = "px-6 py-2.5 rounded-full text-sm font-bold transition-all bg-red-600 text-white shadow-lg shadow-red-500/30";
+                const inactiveStyle = "px-6 py-2.5 rounded-full text-sm font-bold transition-all bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700";
+                
+                if(category === 'black') {
+                    tabBlack.className = activeStyle;
+                    tabWhite.className = inactiveStyle;
+                } else {
+                    tabWhite.className = activeStyle;
+                    tabBlack.className = inactiveStyle;
+                }
+                
+                renderGallery(currentPage);
+            }
+
+            tabBlack.addEventListener('click', () => switchTab('black'));
+            tabWhite.addEventListener('click', () => switchTab('white'));
+
+            // AMBIL DATA JSON (Dengan Fallback untuk Preview Layar)
+            fetch('./videos.json')
+                .then(response => {
+                    if (!response.ok) throw new Error("Gagal mengambil file json");
+                    return response.json();
+                })
+                .catch(error => {
+                    console.warn("Gagal mengambil videos.json di environment ini, menggunakan data cadangan untuk preview.", error);
+                    // Fallback data agar tetap bisa di-preview di layar editor ini
+                    return {
+                        "black": [
+                            "GmlkrHEC1", "MIksjhlJ1", "7nAmkj0B1", "VhBAEVqT1", "VV9dtX8C1",
+                            "te0Mjl9z1", "ghDHMCx31", "udXI1XU51", "hM2jBjld1", "MhLtffVH1",
+                            "WvZD6Gjs1", "JqRAbi2U1", "5cneNfvA1", "1Cu6MVWn1", "G7NMB5r11", "A5pC4nzI1"
+                        ],
+                        "white": [
+                            "LdvKe6vk1", "yldrGnmJ1", "HB8GSZNa1", "ceRECvgR1", "BMb1nETB1",
+                            "YzdmI8Vb1", "FD6CbiOM1", "5JGnefbY1", "r7KVsXhv1", "ax0aes9W1",
+                            "pmeX3hfp1", "VPCp8le51", "PVtzKLud1", "QrzViTeA1", "5mQyYs4r1",
+                            "b5zCbsSQ1", "ym8DUc3g1", "bh8Gb35j1"
+                        ]
+                    };
+                })
+                .then(data => {
+                    videoData = data;
+                    
+                    // Sembunyikan loading, tampilkan grid
+                    loadingState.classList.add('hidden');
+                    galleryGrid.classList.remove('hidden');
+                    paginationArea.classList.remove('hidden');
+                    
+                    // Render kategori default (black)
+                    renderGallery(currentPage);
+                });
+
+
+            function renderGallery(page) {
+                galleryGrid.innerHTML = ''; // Bersihkan grid
+                
+                // Ambil daftar ID video berdasarkan kategori aktif
+                const activeVideos = videoData[currentCategory] || [];
+                totalPages = Math.ceil(activeVideos.length / itemsPerPage) || 1;
+                
+                const startIndex = (page - 1) * itemsPerPage;
+                const endIndex = startIndex + itemsPerPage;
+                const videosToRender = activeVideos.slice(startIndex, endIndex);
+
+                videosToRender.forEach(videoId => {
+                    const filename = videoId.includes('.') ? videoId : videoId + '.mp4';
+                    const videoUrl = 'https://cdn.videy.co/' + encodeURIComponent(filename);
+                    
+                    const card = document.createElement('a');
+                    // Mengarahkan ke halaman pemutar lokal (index.html) di domain yang sama
+                    card.href = `index.html?v=${videoId}`;
+                    card.className = "vid-card group";
+                    
+                    // Desain kartu bersih, tanpa judul teks, murni visual
+                    card.innerHTML = `
+                        <div class="thumb-box h-full">
+                            <video 
+                                src="${videoUrl}#t=0.001" 
+                                muted 
+                                playsinline 
+                                preload="metadata"
+                                loop>
+                            </video>
+                            
+                            <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-all duration-300"></div>
+                            
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-110">
+                                <div class="w-14 h-14 bg-red-600/90 backdrop-blur-[2px] rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(220,38,38,0.5)]">
+                                    <i data-lucide="play" class="w-6 h-6 text-white fill-white ml-1"></i>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    galleryGrid.appendChild(card);
+
+                    // Auto-play on hover
+                    const vidElement = card.querySelector('video');
+                    card.addEventListener('mouseenter', () => {
+                        vidElement.play().catch(e => {}); 
+                    });
+                    card.addEventListener('mouseleave', () => {
+                        vidElement.pause();
+                        vidElement.currentTime = 0.001;
+                    });
+                });
+
+                // Perbarui Indikator Halaman
+                currentPageNum.textContent = page;
+                totalPagesNum.textContent = totalPages;
+                
+                const currentShowing = videosToRender.length;
+                showingCount.textContent = `${startIndex + 1} - ${startIndex + currentShowing} of ${activeVideos.length}`;
+
+                // Status Tombol
+                btnPrev.disabled = page === 1;
+                btnNext.disabled = page === totalPages || totalPages === 0;
+
+                lucide.createIcons();
+            }
+
+            btnPrev.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderGallery(currentPage);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+
+            btnNext.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderGallery(currentPage);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
